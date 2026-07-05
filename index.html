@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Schedule Availability Checker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="api-card">
+    <h2>Availability Lookup</h2>
+    
+    <!-- 🟢 Navigation Bar Elements Wrapper -->
+    <div class="nav-controls">
+      <button id="prev-btn" class="nav-btn" title="Previous Day">◀</button>
+      <input type="date" id="date-picker">
+      <button id="next-btn" class="nav-btn" title="Next Day">▶</button>
+    </div>
+
+    <div class="results-display">
+      <div id="availability-status" class="status-loading">Loading status...</div>
+      
+      <!-- Roster Statistics Display Blocks -->
+      <div class="roster-info">
+        <div>Staff Present: <b id="total-staff" style="color:#2d3748;">-</b></div>
+        <div>Unassigned Rows: <b id="unassigned-rows" style="color:#2d3748;">-</b></div>
+      </div>
+      
+      <div class="session-metrics">
+        <div class="metric-box">
+          <div>🌅 Morning Openings</div>
+          <div id="am-slots" class="metric-num">-</div>
+        </div>
+        <div class="metric-box">
+          <div>🌇 Afternoon Openings</div>
+          <div id="pm-slots" class="metric-num">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const datePicker = document.getElementById("date-picker");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const statusContainer = document.getElementById("availability-status");
+    const totalStaffContainer = document.getElementById("total-staff");
+    const unassignedContainer = document.getElementById("unassigned-rows");
+    const amSlotsContainer = document.getElementById("am-slots");
+    const pmSlotsContainer = document.getElementById("pm-slots");
+
+    // Initialize Default Target Value to Today's Local Date
+    datePicker.value = new Date().toISOString().split('T')[0];
+
+    async function checkScheduleAvailability(targetDate) {
+      // ⚠️ UPDATE THIS KEY WITH YOUR TRUE ACTIVE DEPLOYMENT ID URL STRING:
+      const apiEndpointBase = "https://script.google.com/macros/s/AKfycbxzGTAxxxtGsL49cgTjgb8s9To2dWyIUDiJnxnHWGjbiqYWqtH7e1rsi8kplahy29mQ/exec";
+      const targetUrl = `${apiEndpointBase}?date=${targetDate}`;
+
+      // Reset DOM state placeholders during transmission passes
+      statusContainer.textContent = "⏳ Fetching Data...";
+      statusContainer.className = "status-loading";
+      totalStaffContainer.textContent = "-";
+      unassignedContainer.textContent = "-";
+      amSlotsContainer.textContent = "-";
+      pmSlotsContainer.textContent = "-";
+
+      try {
+        const response = await fetch(targetUrl);
+        if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
+
+        const data = await response.json();
+        
+        if (data.status === "success") {
+          if (data.metrics.totalInstructors === 0) {
+            statusContainer.textContent = "⚪ No Roster Configured";
+            statusContainer.className = "status-loading";
+            totalStaffContainer.textContent = "0";
+            unassignedContainer.textContent = data.metrics.unassignedLines;
+            amSlotsContainer.textContent = "0";
+            pmSlotsContainer.textContent = "0";
+            return;
+          }
+
+          if (data.isFullyBooked) {
+            statusContainer.textContent = "❌ Fully Booked";
+            statusContainer.className = "status-alert-danger";
+          } else {
+            statusContainer.textContent = "🟢 Slots Available";
+            statusContainer.className = "status-alert-success";
+          }
+
+          // Populate metrics using detailed bitmask variables from the server
+          totalStaffContainer.textContent = data.metrics.totalInstructors;
+          unassignedContainer.textContent = data.metrics.unassignedLines; // 🟢 Displayed in UI
+          amSlotsContainer.textContent = data.metrics.openAmSlotsCount;
+          pmSlotsContainer.textContent = data.metrics.openPmSlotsCount;
+        } else {
+          statusContainer.textContent = "❌ Query Failed";
+          statusContainer.className = "status-alert-danger";
+          totalStaffContainer.textContent = "Error";
+        }
+      } catch (error) {
+        statusContainer.textContent = "❌ Connection Error";
+        statusContainer.className = "status-alert-danger";
+        console.error("Fetch Execution Error:", error);
+      }
+    }
+
+    // 🟢 CALENDAR SHIFT MATH ENGINE MODULES
+    function shiftDateByDays(daysToShift) {
+      const currentSelectedDate = new Date(datePicker.value);
+      if (isNaN(currentSelectedDate.getTime())) return; // Safeguard formatting values
+      
+      // Shift absolute date increments mathematically
+      currentSelectedDate.setDate(currentSelectedDate.getDate() + daysToShift);
+      
+      // Re-format calculations back to valid ISO text tokens (YYYY-MM-DD)
+      const adjustedIsoString = currentSelectedDate.toISOString().split('T')[0];
+      datePicker.value = adjustedIsoString;
+      
+      // Fire availability check automatically upon completion of shift
+      checkScheduleAvailability(adjustedIsoString);
+    }
+
+    // 3. EVENT LISTENERS
+    prevBtn.addEventListener("click", () => shiftDateByDays(-1)); // 🟢 Shifts back 1 day
+    nextBtn.addEventListener("click", () => shiftDateByDays(1));  // 🟢 Shifts forward 1 day
+    datePicker.addEventListener("change", (e) => checkScheduleAvailability(e.target.value));
+
+    // Initial load call execution loop
+    checkScheduleAvailability(datePicker.value);
+  </script>
+
+</body>
+</html>
