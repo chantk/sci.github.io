@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Schedule Availability Checker</title>
   
-  <!-- 🟢 LINK TO YOUR EXTERNAL CSS STYLE SHEET -->
+  <!-- LINK TO YOUR EXTERNAL CSS STYLE SHEET -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
 
     <div class="config-controls">
       <label for="zh-row-input">Chinese Roster Start Row (ZH_ROW):</label>
-      <input type="number" id="zh-row-input" value="12" min="1" max="200">
+      <input type="number" id="zh-row-input" value="39" min="1" max="200">
     </div>
 
     <div id="loading-overlay">⏳ Fetching Data...</div>
@@ -66,63 +66,7 @@
 
   </div>
 
-  <script>
-    const datePicker = document.getElementById("date-picker");
-    const zhRowInput = document.getElementById("zh-row-input");
-    const prevBtn = document.getElementById("prev-btn");
-    const nextBtn = document.getElementById("next-btn");
-    const loadingOverlay = document.getElementById("loading-overlay");
-
-    datePicker.value = new Date().toISOString().split('T')[0];
-
-    async function checkScheduleAvailability() {
-      const targetDate = datePicker.value;
-      const boundaryValue = zhRowInput.value;
-
-      // ⚠️ UPDATE THIS KEY WITH YOUR TRUE ACTIVE DEPLOYMENT ID URL STRING:
-      const apiEndpointBase = "https://script.google.com/macros/s/AKfycbxzGTAxxxtGsL49cgTjgb8s9To2dWyIUDiJnxnHWGjbiqYWqtH7e1rsi8kplahy29mQ/exec";
-      const targetUrl = `${apiEndpointBase}?date=${targetDate}&zh_row=${boundaryValue}`;
-
-      loadingOverlay.style.display = "block";
-
-      try {
-        const response = await fetch(targetUrl);
-        if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
-        const data = await response.json();
-        
-        if (data.status === "success") {
-          document.getElementById("en-staff").textContent = data.enMetrics.present;
-          document.getElementById("en-unassigned").textContent = data.enMetrics.unassigned;
-          document.getElementById("en-am").textContent = data.enMetrics.openAm;
-          document.getElementById("en-pm").textContent = data.enMetrics.openPm;
-
-          document.getElementById("zh-staff").textContent = data.zhMetrics.present;
-          document.getElementById("zh-unassigned").textContent = data.zhMetrics.unassigned;
-          document.getElementById("zh-am").textContent = data.zhMetrics.openAm;
-          document.getElementById("zh-pm").textContent = data.zhMetrics.openPm;
-        }
-      } catch (error) {
-        console.error("Fetch Execution Error:", error);
-      } university finally {
-        loadingOverlay.style.display = "none";
-      }
-    }
-
-    function shiftDateByDays(daysToShift) {
-      const currentSelectedDate = new Date(datePicker.value);
-      if (isNaN(currentSelectedDate.getTime())) return;
-      currentSelectedDate.setDate(currentSelectedDate.getDate() + daysToShift);
-      datePicker.value = currentSelectedDate.toISOString().split('T')[0];
-      checkScheduleAvailability();
-    }
-
-    prevBtn.addEventListener("click", () => shiftDateByDays(-1));
-    nextBtn.addEventListener("click", () => shiftDateByDays(1));
-    datePicker.addEventListener("change", checkScheduleAvailability);
-    zhRowInput.addEventListener("change", checkScheduleAvailability);
-
-    checkScheduleAvailability();
-  </script>
-
+  <!-- 🟢 LINK TO YOUR EXTERNAL JAVASCRIPT LOGIC FILE -->
+  <script src="app.js"></script>
 </body>
 </html>
