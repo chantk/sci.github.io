@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Schedule Availability Checker</title>
+  
+  <!-- 🟢 LINK TO YOUR EXTERNAL CSS STYLE SHEET -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,126 +13,115 @@
   <div class="api-card">
     <h2>Availability Lookup</h2>
     
-    <!-- 🟢 Navigation Bar Elements Wrapper -->
     <div class="nav-controls">
-      <button id="prev-btn" class="nav-btn" title="Previous Day">◀</button>
+      <button id="prev-btn" class="nav-btn">◀</button>
       <input type="date" id="date-picker">
-      <button id="next-btn" class="nav-btn" title="Next Day">▶</button>
+      <button id="next-btn" class="nav-btn">▶</button>
     </div>
 
-    <div class="results-display">
-      <div id="availability-status" class="status-loading">Loading status...</div>
-      
-      <!-- Roster Statistics Display Blocks -->
+    <div class="config-controls">
+      <label for="zh-row-input">Chinese Roster Start Row (ZH_ROW):</label>
+      <input type="number" id="zh-row-input" value="12" min="1" max="200">
+    </div>
+
+    <div id="loading-overlay">⏳ Fetching Data...</div>
+
+    <!-- ENGLISH TEAM DISPLAY DATA PLACEMENTS -->
+    <div class="team-section">
+      <div class="team-title">🇬🇧 English Instructors</div>
       <div class="roster-info">
-        <div>Staff Present: <b id="total-staff" style="color:#2d3748;">-</b></div>
-        <div>Unassigned Rows: <b id="unassigned-rows" style="color:#2d3748;">-</b></div>
+        <div>Staff Present: <b id="en-staff">-</b></div>
+        <div>Unassigned Rows: <b id="en-unassigned">-</b></div>
       </div>
-      
       <div class="session-metrics">
         <div class="metric-box">
-          <div>🌅 Morning Openings</div>
-          <div id="am-slots" class="metric-num">-</div>
+          <div>🌅 Morning Open</div>
+          <div id="en-am" class="metric-num">-</div>
         </div>
         <div class="metric-box">
-          <div>🌇 Afternoon Openings</div>
-          <div id="pm-slots" class="metric-num">-</div>
+          <div>🌇 Afternoon Open</div>
+          <div id="en-pm" class="metric-num">-</div>
         </div>
       </div>
     </div>
+
+    <!-- CHINESE TEAM DISPLAY DATA PLACEMENTS -->
+    <div class="team-section">
+      <div class="team-title">🇨🇳 Chinese Instructors</div>
+      <div class="roster-info">
+        <div>Staff Present: <b id="zh-staff">-</b></div>
+        <div>Unassigned Rows: <b id="zh-unassigned">-</b></div>
+      </div>
+      <div class="session-metrics">
+        <div class="metric-box">
+          <div>🌅 Morning Open</div>
+          <div id="zh-am" class="metric-num">-</div>
+        </div>
+        <div class="metric-box">
+          <div>🌇 Afternoon Open</div>
+          <div id="zh-pm" class="metric-num">-</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
     const datePicker = document.getElementById("date-picker");
+    const zhRowInput = document.getElementById("zh-row-input");
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
-    const statusContainer = document.getElementById("availability-status");
-    const totalStaffContainer = document.getElementById("total-staff");
-    const unassignedContainer = document.getElementById("unassigned-rows");
-    const amSlotsContainer = document.getElementById("am-slots");
-    const pmSlotsContainer = document.getElementById("pm-slots");
+    const loadingOverlay = document.getElementById("loading-overlay");
 
-    // Initialize Default Target Value to Today's Local Date
     datePicker.value = new Date().toISOString().split('T')[0];
 
-    async function checkScheduleAvailability(targetDate) {
+    async function checkScheduleAvailability() {
+      const targetDate = datePicker.value;
+      const boundaryValue = zhRowInput.value;
+
       // ⚠️ UPDATE THIS KEY WITH YOUR TRUE ACTIVE DEPLOYMENT ID URL STRING:
       const apiEndpointBase = "https://script.google.com/macros/s/AKfycbxzGTAxxxtGsL49cgTjgb8s9To2dWyIUDiJnxnHWGjbiqYWqtH7e1rsi8kplahy29mQ/exec";
-      const targetUrl = `${apiEndpointBase}?date=${targetDate}`;
+      const targetUrl = `${apiEndpointBase}?date=${targetDate}&zh_row=${boundaryValue}`;
 
-      // Reset DOM state placeholders during transmission passes
-      statusContainer.textContent = "⏳ Fetching Data...";
-      statusContainer.className = "status-loading";
-      totalStaffContainer.textContent = "-";
-      unassignedContainer.textContent = "-";
-      amSlotsContainer.textContent = "-";
-      pmSlotsContainer.textContent = "-";
+      loadingOverlay.style.display = "block";
 
       try {
         const response = await fetch(targetUrl);
         if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
-
         const data = await response.json();
         
         if (data.status === "success") {
-          if (data.metrics.totalInstructors === 0) {
-            statusContainer.textContent = "⚪ No Roster Configured";
-            statusContainer.className = "status-loading";
-            totalStaffContainer.textContent = "0";
-            unassignedContainer.textContent = data.metrics.unassignedLines;
-            amSlotsContainer.textContent = "0";
-            pmSlotsContainer.textContent = "0";
-            return;
-          }
+          document.getElementById("en-staff").textContent = data.enMetrics.present;
+          document.getElementById("en-unassigned").textContent = data.enMetrics.unassigned;
+          document.getElementById("en-am").textContent = data.enMetrics.openAm;
+          document.getElementById("en-pm").textContent = data.enMetrics.openPm;
 
-          if (data.isFullyBooked) {
-            statusContainer.textContent = "❌ Fully Booked";
-            statusContainer.className = "status-alert-danger";
-          } else {
-            statusContainer.textContent = "🟢 Slots Available";
-            statusContainer.className = "status-alert-success";
-          }
-
-          // Populate metrics using detailed bitmask variables from the server
-          totalStaffContainer.textContent = data.metrics.totalInstructors;
-          unassignedContainer.textContent = data.metrics.unassignedLines; // 🟢 Displayed in UI
-          amSlotsContainer.textContent = data.metrics.openAmSlotsCount;
-          pmSlotsContainer.textContent = data.metrics.openPmSlotsCount;
-        } else {
-          statusContainer.textContent = "❌ Query Failed";
-          statusContainer.className = "status-alert-danger";
-          totalStaffContainer.textContent = "Error";
+          document.getElementById("zh-staff").textContent = data.zhMetrics.present;
+          document.getElementById("zh-unassigned").textContent = data.zhMetrics.unassigned;
+          document.getElementById("zh-am").textContent = data.zhMetrics.openAm;
+          document.getElementById("zh-pm").textContent = data.zhMetrics.openPm;
         }
       } catch (error) {
-        statusContainer.textContent = "❌ Connection Error";
-        statusContainer.className = "status-alert-danger";
         console.error("Fetch Execution Error:", error);
+      } university finally {
+        loadingOverlay.style.display = "none";
       }
     }
 
-    // 🟢 CALENDAR SHIFT MATH ENGINE MODULES
     function shiftDateByDays(daysToShift) {
       const currentSelectedDate = new Date(datePicker.value);
-      if (isNaN(currentSelectedDate.getTime())) return; // Safeguard formatting values
-      
-      // Shift absolute date increments mathematically
+      if (isNaN(currentSelectedDate.getTime())) return;
       currentSelectedDate.setDate(currentSelectedDate.getDate() + daysToShift);
-      
-      // Re-format calculations back to valid ISO text tokens (YYYY-MM-DD)
-      const adjustedIsoString = currentSelectedDate.toISOString().split('T')[0];
-      datePicker.value = adjustedIsoString;
-      
-      // Fire availability check automatically upon completion of shift
-      checkScheduleAvailability(adjustedIsoString);
+      datePicker.value = currentSelectedDate.toISOString().split('T')[0];
+      checkScheduleAvailability();
     }
 
-    // 3. EVENT LISTENERS
-    prevBtn.addEventListener("click", () => shiftDateByDays(-1)); // 🟢 Shifts back 1 day
-    nextBtn.addEventListener("click", () => shiftDateByDays(1));  // 🟢 Shifts forward 1 day
-    datePicker.addEventListener("change", (e) => checkScheduleAvailability(e.target.value));
+    prevBtn.addEventListener("click", () => shiftDateByDays(-1));
+    nextBtn.addEventListener("click", () => shiftDateByDays(1));
+    datePicker.addEventListener("change", checkScheduleAvailability);
+    zhRowInput.addEventListener("change", checkScheduleAvailability);
 
-    // Initial load call execution loop
-    checkScheduleAvailability(datePicker.value);
+    checkScheduleAvailability();
   </script>
 
 </body>
