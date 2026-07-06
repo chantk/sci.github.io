@@ -4,7 +4,8 @@ const prevBtn = document.getElementById("prev-btn");
 const nextBtn = document.getElementById("next-btn");
 const loadingOverlay = document.getElementById("loading-overlay");
 
-datePicker.value = new Date().toISOString().split('T')[0];
+const currentYear = new Date().getFullYear();
+datePicker.value = `${currentYear}-12-15`;
 
 async function checkScheduleAvailability() {
   const targetDate = datePicker.value;
