@@ -13,12 +13,14 @@
   <div class="api-card">
     <h2>Availability Lookup</h2>
     
+    <!-- Date Tracker Controls Bar Layout -->
     <div class="nav-controls">
       <button id="prev-btn" class="nav-btn">◀</button>
       <input type="date" id="date-picker">
       <button id="next-btn" class="nav-btn">▶</button>
     </div>
 
+    <!-- Hidden Configuration Input Box -->
     <div class="config-controls" style="display: none;">
       <label for="zh-row-input">Chinese Roster Start Row (ZH_ROW):</label>
       <input type="number" id="zh-row-input" value="39" min="1" max="200">
@@ -26,47 +28,69 @@
 
     <div id="loading-overlay">⏳ Fetching Data...</div>
 
-    <!-- ENGLISH TEAM DISPLAY DATA PLACEMENTS -->
+    <!-- 🇬🇧 ENGLISH TEAM DISPLAY DATA CARD -->
     <div class="team-section">
       <div class="team-title">🇬🇧 English Instructors</div>
       <div class="roster-info">
         <div>Staff Present: <b id="en-staff">-</b></div>
         <div>Unassigned Rows: <b id="en-unassigned">-</b></div>
       </div>
+      
       <div class="session-metrics">
         <div class="metric-box">
-          <div>🌅 Morning Open</div>
-          <div id="en-am" class="metric-num">-</div>
+          <div>🎿 Ski Morning</div>
+          <div id="en-ski-am" class="metric-num">-</div>
         </div>
         <div class="metric-box">
-          <div>🌇 Afternoon Open</div>
-          <div id="en-pm" class="metric-num">-</div>
+          <div>🎿 Ski Afternoon</div>
+          <div id="en-ski-pm" class="metric-num">-</div>
+        </div>
+      </div>
+      <div class="session-metrics" style="margin-top: 10px;">
+        <div class="metric-box">
+          <div>🏂 SB Morning</div>
+          <div id="en-sb-am" class="metric-num">-</div>
+        </div>
+        <div class="metric-box">
+          <div>🏂 SB Afternoon</div>
+          <div id="en-sb-pm" class="metric-num">-</div>
         </div>
       </div>
     </div>
 
-    <!-- CHINESE TEAM DISPLAY DATA PLACEMENTS -->
+    <!-- 🇹🇼 CHINESE TEAM DISPLAY DATA CARD -->
     <div class="team-section">
-      <div class="team-title">🇨🇳 Chinese Instructors</div>
+      <div class="team-title">🇹🇼 Chinese Instructors</div>
       <div class="roster-info">
         <div>Staff Present: <b id="zh-staff">-</b></div>
         <div>Unassigned Rows: <b id="zh-unassigned">-</b></div>
       </div>
+      
       <div class="session-metrics">
         <div class="metric-box">
-          <div>🌅 Morning Open</div>
-          <div id="zh-am" class="metric-num">-</div>
+          <div>🎿 Ski Morning</div>
+          <div id="zh-ski-am" class="metric-num">-</div>
         </div>
         <div class="metric-box">
-          <div>🌇 Afternoon Open</div>
-          <div id="zh-pm" class="metric-num">-</div>
+          <div>🎿 Ski Afternoon</div>
+          <div id="zh-ski-pm" class="metric-num">-</div>
+        </div>
+      </div>
+      <div class="session-metrics" style="margin-top: 10px;">
+        <div class="metric-box">
+          <div>🏂 SB Morning</div>
+          <div id="zh-sb-am" class="metric-num">-</div>
+        </div>
+        <div class="metric-box">
+          <div>🏂 SB Afternoon</div>
+          <div id="zh-sb-pm" class="metric-num">-</div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- 🟢 LINK TO YOUR EXTERNAL JAVASCRIPT LOGIC FILE -->
+  <!-- LINK TO YOUR EXTERNAL JAVASCRIPT LOGIC FILE -->
   <script src="app.js"></script>
 </body>
 </html>
