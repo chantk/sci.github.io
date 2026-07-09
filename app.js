@@ -17,7 +17,7 @@ async function checkScheduleAvailability() {
   const boundaryValue = zhRowInput.value;
 
   // ⚠️ UPDATE THIS KEY WITH YOUR TRUE ACTIVE DEPLOYMENT ID URL STRING:
-  const apiEndpointBase = "https://script.google.com/macros/s/AKfycbwcP5D3ASgRBV5HYLAuVeKE3y6UNmv8CzcKgupE-YbalPu-5KB6T4wqsxhr_KlTKW-S/exec";
+  const apiEndpointBase = "https://script.google.com/macros/s/AKfycbxloQnRlleIndgWE08mnEzcgG89r47C07KaTC8XT6WrYzMr2SH-BB3AmxFNr9F0MaTE/exec";
   const targetUrl = `${apiEndpointBase}?date=${targetDate}&zh_row=${boundaryValue}`;
 
   loadingOverlay.style.display = "block";
